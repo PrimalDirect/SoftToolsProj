@@ -144,7 +144,7 @@ namespace LogibForm
 
         private List<PictureBox> GetAllPictureBoxes()
         {
-            return GetControlsRecursive(this)
+            return GetControlsRecursive(pnlGames)
                 .OfType<PictureBox>()
                 .OrderBy(pb => pb.TabIndex)
                 .ToList();
@@ -240,9 +240,11 @@ namespace LogibForm
             }
 
             // Step 3: Load images into PictureBoxes
+
             for (int i = 0; i < pictureBoxes.Count; i++)
             {
                 var pb = pictureBoxes[i];
+                var parentPanel = pb.Parent;
 
                 if (i < games.Count)
                 {
@@ -261,13 +263,36 @@ namespace LogibForm
                         pb.Image = null;
                         pb.Tag = gameName + " not found";
                     }
+
+                    // Set label text and auto-size
+                    Label lbl = parentPanel.Controls.OfType<Label>().FirstOrDefault();
+                    if (lbl != null)
+                    {
+                        lbl.Text = gameName;
+                        lbl.AutoSize = true; // Auto fit content
+                        lbl.MaximumSize = new Size(parentPanel.Width, 0); // Wrap text if needed
+                        lbl.TextAlign = ContentAlignment.MiddleCenter;
+
+                        // Position label below PictureBox
+                        lbl.Location = new Point(
+                            (parentPanel.Width - lbl.Width) / 2,
+                            pb.Bottom + 5
+                        );
+                    }
                 }
                 else
                 {
                     pb.BackColor = Color.LightGray;
                     pb.Image = null;
+
+                    Label lbl = parentPanel.Controls.OfType<Label>().FirstOrDefault();
+                    if (lbl != null)
+                    {
+                        lbl.Text = "";
+                    }
                 }
-            }        
+            }
+
         }
     }
 }
