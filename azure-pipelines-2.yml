@@ -23,19 +23,11 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: '**/*.sln'
-    msbuildArgs: '/p:Configuration=$(buildConfiguration)'
-    platform: 'Any CPU'
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-# Optional: Publish build output as artifact
-- task: CopyFiles@2
+- task: VSTest@2
   inputs:
-    contents: '**\bin\$(buildConfiguration)\**'
-    targetFolder: '$(Build.ArtifactStagingDirectory)'
-
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
-    artifact: 'PrimalDirect'
-    publishLocation: 'pipeline'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
