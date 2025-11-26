@@ -173,7 +173,6 @@ C:\Users\divin\source\repos\SoftToolsProj\LogibForm\obj\Debug\LogibForm.Customer
 C:\Users\divin\source\repos\SoftToolsProj\LogibForm\obj\Debug\LogibForm.CustomerLoginForm.resources
 C:\Users\divin\source\repos\SoftToolsProj\LogibForm\obj\Debug\LogibForm.CustomerDashBoard.resources
 C:\Users\divin\Source\Repos\SoftToolsProj\LogibForm\obj\Debug\LogibForm.exe.config
-C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\call_of_duty.jpg
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Elder Scrolls Skyrim.jpg
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Five Nights At Freddys.jpg
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Halo Infinite.jpg
@@ -184,5 +183,5 @@ C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Sally F
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\The Last of Us.jpg
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Tomb Raider.png
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Uncharted Legacy of Thieves Collection.jpg
-C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\obj\Debug\LogibForm.exe.config
 C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\Devil May Cry 4.jpg
+C:\Users\T00233163\Source\Repos\SoftToolsProj\LogibForm\bin\Debug\Images\call of duty.jpg

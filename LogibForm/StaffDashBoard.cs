@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace LogibForm
     public partial class StaffDashBoard : Form
     {
         private string _username;
+        private string imageFolder;
         private DataTable inventoryTable;
         private OracleDataAdapter inventoryAdapter;
         private OracleConnection inventoryConnection;
@@ -26,6 +28,8 @@ namespace LogibForm
             lblInventoryUser.Text = _username;
             lblOverviewUser.Text = _username;
 
+            imageFolder = Path.Combine(Application.StartupPath, "Images");
+
             // Makes the SATA UI Button transparent to match the gradient panel
             btnOverView.CheckedBackground = Color.Transparent;
             btnOverView.NormalBackground = Color.Transparent;
@@ -35,13 +39,14 @@ namespace LogibForm
 
             btnInventory.CheckedBackground = Color.Transparent;
             btnInventory.NormalBackground = Color.Transparent;
-            loadInventoryGrid();
+            this.Load += StaffDashBoard_Load;
         }
 
         private void StaffDashBoard_Load(object sender, EventArgs e)
         {
             showPanel(overviewPanel);
-
+            loadInventoryGrid();
+            LoadInventoryImages();
         }
 
         private void btnOverView_MouseHover(object sender, EventArgs e)
@@ -199,6 +204,160 @@ namespace LogibForm
             catch (Exception ex)
             {
                 MessageBox.Show("Unexpected error: " + ex.Message);
+            }
+        }
+        private List<string> GetGameNames()
+        {
+            var names = new List<string>();
+            try
+            {
+                using (var conn = new OracleConnection(PrimalDirectDB.oradb))
+                {
+                    conn.Open();
+                    string sql = "SELECT TRIM(GameName) FROM VideoGames ORDER BY GameID";
+
+                    using (var cmd = new OracleCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            names.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error fetching game names: " + ex.Message);
+            }
+            return names;
+        }
+
+        private IEnumerable<Control> GetControlsRecursive(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                yield return c;
+                foreach (var child in GetControlsRecursive(c))
+                    yield return child;
+            }
+        }
+
+        private void LoadInventoryGrid()
+        {
+            try
+            {
+                inventoryTable = new DataTable();
+                inventoryConnection = new OracleConnection(PrimalDirectDB.oradb);
+                inventoryAdapter = new OracleDataAdapter("SELECT * FROM VideoGames", inventoryConnection);
+                inventoryAdapter.Fill(inventoryTable);
+
+                dgvInventory.DataSource = inventoryTable;
+
+                // Styling omitted for brevity, same as your existing code
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading inventory: " + ex.Message);
+            }
+        }
+
+        private void LoadInventoryImages()
+        {
+            var games = GetGameNames();
+            if (!Directory.Exists(imageFolder))
+            {
+                MessageBox.Show("Images folder not found: " + imageFolder);
+                return;
+            }
+
+            var pictureBoxes = GetControlsRecursive(pnlGames)
+                .OfType<PictureBox>()
+                .OrderBy(pb => pb.TabIndex)
+                .ToList();
+
+            for (int i = 0; i < pictureBoxes.Count; i++)
+            {
+                var pb = pictureBoxes[i];
+                var parentPanel = pb.Parent;
+
+                if (i < games.Count)
+                {
+                    string gameName = games[i].Trim();
+                    Image img = LoadGameImage(gameName);
+
+                    if (img != null)
+                    {
+                        pb.Image = img;
+                        pb.SizeMode = PictureBoxSizeMode.Zoom;
+                        pb.BringToFront();
+                    }
+                    else
+                    {
+                        pb.BackColor = Color.LightGray;
+                        pb.Image = null;
+                        pb.Tag = gameName + " not found";
+                    }
+
+                    // Set label text below the PictureBox
+                    Label lbl = parentPanel.Controls.OfType<Label>().FirstOrDefault();
+                    if (lbl != null)
+                    {
+                        lbl.Text = gameName;
+                        lbl.AutoSize = true;
+                        lbl.MaximumSize = new Size(parentPanel.Width, 0);
+                        lbl.TextAlign = ContentAlignment.MiddleCenter;
+                        lbl.Location = new Point(
+                            (parentPanel.Width - lbl.Width) / 2,
+                            pb.Bottom + 5
+                        );
+                    }
+                }
+                else
+                {
+                    pb.BackColor = Color.LightGray;
+                    pb.Image = null;
+                    Label lbl = parentPanel.Controls.OfType<Label>().FirstOrDefault();
+                    if (lbl != null) lbl.Text = "";
+                }
+            }
+        }
+
+        private Image LoadGameImage(string gameName)
+        {
+            gameName = gameName.Trim();
+
+            string[] files = Directory.GetFiles(imageFolder, "*.*")
+                .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+                         || f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
+                         || f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                         || f.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
+                         || f.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            foreach (var file in files)
+            {
+                if (string.Equals(Path.GetFileNameWithoutExtension(file).Trim(), gameName, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
+                        {
+                            return Image.FromStream(new MemoryStream(ReadFully(fs)));
+                        }
+                    }
+                    catch { return null; }
+                }
+            }
+            return null;
+        }
+
+        private byte[] ReadFully(Stream input)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                input.CopyTo(ms);
+                return ms.ToArray();
             }
         }
     }
